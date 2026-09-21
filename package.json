@@ -2,12 +2,13 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "preinstall": "rm -f package-lock.json yarn.lock",
-    "prebuild": "npx pnpm install --frozen-lockfile || npx pnpm install",
-    "build": "npx pnpm run typecheck && npx pnpm -r --if-present run build",
+    "prebuild": "npx pnpm@9.15.4 install --frozen-lockfile || npx pnpm@9.15.4 install --force",
+    "build": "npx pnpm@9.15.4 run typecheck && npx pnpm@9.15.4 -r --if-present run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "npx pnpm run typecheck:libs && npx pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "npx pnpm@9.15.4 run typecheck:libs && npx pnpm@9.15.4 -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "private": true,
   "dependencies": {
