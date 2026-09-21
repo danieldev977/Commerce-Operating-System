@@ -1,12 +1,13 @@
 import { Bell, ChevronDown, CircleDollarSign, ClipboardList, Command, Boxes, LayoutDashboard, LifeBuoy, Menu, PackageCheck, PanelLeftClose, Truck, UsersRound, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useListFulfillmentExceptions } from '@workspace/api-client-react';
 
 const navItems = [
   { href: '/', label: 'Control tower', icon: LayoutDashboard },
   { href: '/orders', label: 'Orders', icon: ClipboardList },
   { href: '/inventory', label: 'Inventory', icon: Boxes },
-  { href: '/fulfillment', label: 'Fulfillment', icon: Truck, count: 7 },
+  { href: '/fulfillment', label: 'Fulfillment', icon: Truck },
   { href: '/vendors', label: 'Vendors', icon: UsersRound },
   { href: '/settlements', label: 'Settlements', icon: CircleDollarSign },
 ];
@@ -15,6 +16,8 @@ export function CommerceShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const exceptions = useListFulfillmentExceptions({ status: 'open' });
+  const openExceptionCount = exceptions.data?.length ?? 0;
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground">
@@ -31,8 +34,9 @@ export function CommerceShell({ children }: { children: ReactNode }) {
         <div className="px-4 pt-7">
           {!collapsed && <p className="mb-3 px-2 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-sidebar-foreground/40">Command center</p>}
           <nav className="space-y-1">
-            {navItems.map(({ href, label, icon: Icon, count }) => {
+            {navItems.map(({ href, label, icon: Icon }) => {
               const active = href === '/' ? location === '/' : location.startsWith(href);
+              const count = href === '/fulfillment' && openExceptionCount > 0 ? openExceptionCount : undefined;
               return (
                 <Link href={href} key={href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-colors ${active ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground'} ${collapsed ? 'justify-center px-2' : ''}`}>
                   <Icon size={17} strokeWidth={active ? 2.4 : 1.8} className={active ? 'text-sidebar-primary' : 'text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80'} />
@@ -46,9 +50,9 @@ export function CommerceShell({ children }: { children: ReactNode }) {
           {!collapsed && (
             <div className="mb-4 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3.5">
               <div className="mb-2 flex items-center justify-between"><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-sidebar-foreground/45">System pulse</span><span className="flex items-center gap-1.5 font-mono text-[9px] text-sidebar-primary"><span className="size-1.5 rounded-full bg-sidebar-primary" /> live</span></div>
-              <div className="font-mono text-[11px] text-sidebar-foreground/75">All services nominal</div>
-              <div className="mt-3 h-1 overflow-hidden rounded-full bg-sidebar-border"><div className="h-full w-[94%] rounded-full bg-sidebar-primary" /></div>
-              <div className="mt-1.5 flex justify-between font-mono text-[9px] text-sidebar-foreground/40"><span>uptime</span><span>99.98%</span></div>
+              <div className="font-mono text-[11px] text-sidebar-foreground/75">{openExceptionCount > 0 ? `${openExceptionCount} exception${openExceptionCount === 1 ? '' : 's'} open` : 'All services nominal'}</div>
+              <div className="mt-3 h-1 overflow-hidden rounded-full bg-sidebar-border"><div className={`h-full rounded-full bg-sidebar-primary ${openExceptionCount > 0 ? 'w-[70%]' : 'w-[94%]'}`} /></div>
+              <div className="mt-1.5 flex justify-between font-mono text-[9px] text-sidebar-foreground/40"><span>uptime</span><span>{openExceptionCount > 0 ? 'degraded' : '99.98%'}</span></div>
             </div>
           )}
           <button type="button" onClick={() => setCollapsed((value) => !value)} className="hidden w-full items-center justify-center gap-2 rounded-lg p-2 text-sidebar-foreground/45 hover:bg-sidebar-accent hover:text-sidebar-foreground md:flex" data-testid="button-toggle-sidebar">

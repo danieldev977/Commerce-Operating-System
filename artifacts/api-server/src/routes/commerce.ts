@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { randomUUID } from "node:crypto";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
@@ -180,7 +181,7 @@ router.post("/orders/:orderId", async (req, res): Promise<void> => {
   }
 
   await db.insert(activityTable).values({
-    id: `ACT-${Date.now()}`,
+    id: `ACT-${randomUUID()}`,
     type: "order",
     title: action === "resolve_exception" ? "Exception resolved" : action === "place_on_hold" ? "Order placed on hold" : "Order released",
     detail: `${existing.id} was updated by Operations`,
@@ -193,16 +194,20 @@ router.post("/orders/:orderId", async (req, res): Promise<void> => {
 });
 
 router.get("/inventory/overview", async (_req, res): Promise<void> => {
-  const nodes = await db.select().from(inventoryNodesTable);
+  const [nodes, pendingPaymentOrders] = await Promise.all([
+    db.select().from(inventoryNodesTable),
+    db.select().from(ordersTable).where(eq(ordersTable.paymentStatus, "requires_action")),
+  ]);
   const availableUnits = nodes.reduce((sum, node) => sum + node.available, 0);
   const reservedUnits = nodes.reduce((sum, node) => sum + node.reserved, 0);
   const totalUnits = availableUnits + reservedUnits;
+  const expiringReservations = pendingPaymentOrders.reduce((sum, order) => sum + order.itemCount, 0);
   res.json(
     GetInventoryOverviewResponse.parse({
       availableUnits,
       reservedUnits,
       reservationRate: totalUnits === 0 ? 0 : reservedUnits / totalUnits,
-      expiringReservations: 4,
+      expiringReservations,
       nodes,
     }),
   );
@@ -233,11 +238,22 @@ router.get("/settlements/summary", async (_req, res): Promise<void> => {
   ]);
   const eligibleAmount = batches.filter((batch) => batch.status === "ready_for_review").reduce((sum, batch) => sum + batch.amount, 0);
   const pendingAmount = vendors.reduce((sum, vendor) => sum + vendor.payable, 0);
+
+  const latestBatchDate = batches.length > 0 ? batches[0].date : null;
+  let nextRun = "Pending schedule";
+  if (latestBatchDate) {
+    const parsed = new Date(latestBatchDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      parsed.setDate(parsed.getDate() + 3);
+      nextRun = parsed.toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }) + " · 09:00 PKT";
+    }
+  }
+
   res.json(
     GetSettlementSummaryResponse.parse({
       eligibleAmount,
       pendingAmount,
-      nextRun: "24 Sep 2026 · 09:00 PKT",
+      nextRun,
       batches,
       vendorCount: vendors.length,
     }),
