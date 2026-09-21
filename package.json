@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "rm -f package-lock.json yarn.lock",
+    "prebuild": "npx pnpm install --frozen-lockfile || npx pnpm install",
     "build": "npx pnpm run typecheck && npx pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "npx pnpm run typecheck:libs && npx pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
