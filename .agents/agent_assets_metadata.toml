@@ -1,0 +1,17 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "pXkjMi6DamwesltDDA6sj"
+uri = "file://.local/conversation-workspace/files/COMMERCE_ARCHITECTURE_CONTRACT.md"
+type = "text"
+title = "Commerce Architecture Contract"
+description = "Build-ready architecture contract for the marketplace commerce operating system, including domain boundaries, invariants, ledger rules, state machines, AI guardrails, implementation phases, and acceptance scenarios."
+logical_id = "7bfc34fa-3f58-4271-9ee4-58aff3dc0a48"
+content_hash = "sha256:3f794dfb5ab484b73fb8aab2e19286353314a1e4175d3460f8969bafa094882b"
+size = 20125
+mtime_ms = 1789978013356
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/conversation:4593e630-b252-42d2-aa2b-749472a8e12f/7bfc34fa-3f58-4271-9ee4-58aff3dc0a48/6866c6d7-98ce-44e2-8f8d-543e658225fc"
+storage_version_token = "1789978019915798"
+content_type = "text/markdown"
+source_uri = "file://COMMERCE_ARCHITECTURE_CONTRACT.md"

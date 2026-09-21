@@ -1,0 +1,1 @@
+- [API codegen runtime typing](api-codegen.md) — generated fetch clients require iterable DOM typings for shared typechecks.

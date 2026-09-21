@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Commerce Operating System"
+description = "An operations control tower for a multi-vendor commerce platform, showing order orchestration, vendor sub-orders, inventory reservations, fulfillment health, returns, and settlement readiness."
+version = "1.0.0"
+id = "artifacts/commerce-os"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23254
+
+[services.development]
+run = "pnpm --filter @workspace/commerce-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/commerce-os", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/commerce-os/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23254"
+BASE_PATH = "/"
